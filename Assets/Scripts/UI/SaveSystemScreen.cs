@@ -1,26 +1,29 @@
 using System;
 using TMPro;
-using UnityEngine;
 using UnityEngine.UI;
 
-public class UIManager : MonoBehaviour
+public class SaveSystemScreen : Screen
 {
     public TMP_Dropdown saveType_DD;
     public TMP_InputField saveKey_if;
     public TMP_InputField saveData_if;
     public TextMeshProUGUI resultArea_txt;
+
     public Button saveSubmit_btn;
 
     string key = "";
     string content = "";
 
     ISaveService selectedSaveService;
+    InstantSave instant;
+    DefferedSave deffered;
 
     public void Awake()
     {
         saveSubmit_btn.onClick.AddListener(OnSaveClicked);
+        instant = new InstantSave();
+        deffered = new DefferedSave();
     }
-
     async void OnSaveClicked()
     {
         LogResult("Saved Called!");
@@ -30,7 +33,7 @@ public class UIManager : MonoBehaviour
         if (SetSaveType(selectedOption))
         {
             SaveResult result = await selectedSaveService.SaveDataAsync(key, content);
-            SetResult(result);
+            LogResult(result);
         }
     }
 
@@ -41,48 +44,37 @@ public class UIManager : MonoBehaviour
             switch (correctType)
             {
                 case SaveType.Immediate:
-                    selectedSaveService = new InstantSave();
+                    selectedSaveService = instant;
                     break;
                 case SaveType.Deffered:
-                    selectedSaveService = new DefferedSave();
+                    selectedSaveService = deffered;
                     break;
                 default:
-                    selectedSaveService = new InstantSave();
+                    selectedSaveService = instant;
                     break;
             }
             return true;
         }
         else
         {
-            SetResult(SaveResult.Failed);
+            SaveResult currentResult = new()
+            {
+                Result = SaveResult.Status.Failed,
+                Data = "",
+                Reason = $"Save Type Received is not available!"
+            };
+            LogResult(currentResult);
             return false;
         }
     }
-
-    void SetResult(SaveResult result)
+    void LogResult(SaveResult result)
     {
-        string msg = "";
-        switch (result)
-        {
-            case SaveResult.OK:
-                msg = "Key and Data Saved Successfully!";
-                break;
-            case SaveResult.Failed:
-                msg = "Failure Saving Key and Data!";
-                break;
-        }
-        LogResult(msg);
+        string msg = result.Reason;
+        resultArea_txt.text += $"[{DateTime.Now.ToLocalTime()}] {msg}\n";
     }
-
-    void LogResult(string msg)
+    void LogResult(string result)
     {
-        resultArea_txt.text += $"[{DateTime.Now.ToLocalTime()}]{msg}\n";
+        string msg = result;
+        resultArea_txt.text += $"[{DateTime.Now.ToLocalTime()}] {msg}\n";
     }
-
-}
-
-public enum SaveType
-{
-    Immediate,
-    Deffered
 }
