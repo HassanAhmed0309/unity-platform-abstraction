@@ -1,21 +1,22 @@
 
+using System;
 using Cysharp.Threading.Tasks;
 
-public class InstantSave : ISaveService
+public class InstantService : IService
 {
     InstantBackend _backend = new();
 
-    public async UniTask<SaveResult> LoadDataAsync(string key)
+    public async UniTask<SystemResult> LoadDataAsync(string key)
     {
         string data = _backend.Load(key);
         await UniTask.Yield();       // uniform timing — see README
-        SaveResult result = new();
-        if (data == StaticConstants.EMPTYSTRING)
+        SystemResult result = new();
+        if (data == null)
         {
             result = new()
             {
-                Result = SaveResult.Status.NotFound,
-                Data = StaticConstants.EMPTYSTRING,
+                Result = SystemResult.Status.NotFound,
+                Data = null,
                 Reason = $"No key {key} found"
             };
         }
@@ -23,7 +24,7 @@ public class InstantSave : ISaveService
         {
             result = new()
             {
-                Result = SaveResult.Status.Success,
+                Result = SystemResult.Status.Success,
                 Data = data,
                 Reason = $"Data {data} found for {key}"
             };
@@ -31,15 +32,20 @@ public class InstantSave : ISaveService
         return result;
     }
 
-    public async UniTask<SaveResult> SaveDataAsync(string key, string data)
+    public async UniTask<SystemResult> SaveDataAsync(string key, string data)
     {
         _backend.Save(key, data);
         await UniTask.Yield();       // uniform timing — see README
-        return new SaveResult()
+        return new SystemResult()
         {
-            Result = SaveResult.Status.Success,
+            Result = SystemResult.Status.Success,
             Data = data,
             Reason = $"Successfully saved data against key {key}"
         };
     }
+
+    // public static implicit operator InstantService(PerKeySerializingService v)
+    // {
+    //     throw new NotImplementedException();
+    // }
 }

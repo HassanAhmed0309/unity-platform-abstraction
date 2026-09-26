@@ -1,8 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -12,12 +11,24 @@ public class UIManager : MonoBehaviour
 
     Dictionary<ScreenTitle, Screen> allScreens = new();
 
+    public static ServiceInitializer serviceInitializer;
+
     void Awake()
     {
         assignToScreenList += AssignToScreenList;
         activateScreen += ActivateScreen;
         deactivateAll += DeactivateAllScreens;
+
+        serviceInitializer = new();
+        serviceInitializer.InitializeServices();
     }
+
+    IEnumerator Start()
+    {
+        yield return null;
+        ActivateScreen(ScreenTitle.MainMenu, true);
+    }
+
     void OnDestroy()
     {
         assignToScreenList -= AssignToScreenList;
@@ -55,14 +66,16 @@ public class UIManager : MonoBehaviour
 
 }
 
-public enum SaveType
+public enum ServiceType
 {
     Immediate,
-    Deffered
+    Deffered,
+    Flaky
 }
 
 public enum ScreenTitle
 {
     SaveScreen,
-    LoadScreen
+    LoadScreen,
+    MainMenu
 }

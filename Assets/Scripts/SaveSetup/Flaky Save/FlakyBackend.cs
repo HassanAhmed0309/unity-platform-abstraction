@@ -2,28 +2,18 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
-public class DefferedBackend
+public class FlakyBackend
 {
     Dictionary<string, string> savedData = new();
 
-    readonly Func<bool> _shouldFail;
-
-    public DefferedBackend(Func<bool> shouldFail = null)
-    {
-        _shouldFail = shouldFail ?? DefaultShouldFail;
-    }
-
-    static bool DefaultShouldFail() => UnityEngine.Random.value < 0.15f;
-
     public async UniTaskVoid Save(string key, string val, Action<bool> actionCallback)
     {
-        await UniTask.Delay(UnityEngine.Random.Range(50, 300));
+        await UniTask.Delay(UnityEngine.Random.Range(50, 150));
+        savedData[key] = val;
+        actionCallback?.Invoke(true);
 
-        bool succeeded = !_shouldFail();
-        if (succeeded)
-            savedData[key] = val;
-
-        actionCallback?.Invoke(succeeded);
+        await UniTask.Delay(UnityEngine.Random.Range(50, 150));
+        actionCallback?.Invoke(true);
     }
     public async UniTaskVoid Load(string key, Action<SystemResult> actionCallback)
     {
@@ -54,11 +44,15 @@ public class DefferedBackend
             reason = $"No data against key {key}";
         }
 
-        actionCallback?.Invoke(new SystemResult()
+        var result = new SystemResult()
         {
             Result = status,
             Data = data,
             Reason = reason
-        });
+        };
+        actionCallback?.Invoke(result);
+
+        await UniTask.Delay(UnityEngine.Random.Range(50, 150));
+        actionCallback?.Invoke(result);
     }
 }

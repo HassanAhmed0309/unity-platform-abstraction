@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 public class InstantBackend
@@ -9,7 +8,7 @@ public class InstantBackend
     {
         if (savedData.ContainsKey(key))
             return savedData[key];
-        return StaticConstants.EMPTYSTRING;
+        return null;
     }
 }
 
@@ -18,3 +17,8 @@ public static class StaticConstants
 {
     public const string EMPTYSTRING = ">empty<";
 }
+
+// public static class UserData
+// {
+//     public static Dictionary<string, string> savedData = new();
+// }

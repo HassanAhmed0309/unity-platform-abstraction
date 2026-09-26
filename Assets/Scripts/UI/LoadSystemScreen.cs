@@ -1,50 +1,45 @@
 using System;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEngine;
 using UnityEngine.UI;
 
-public class SaveSystemScreen : Screen
+public class LoadSystemScreen : Screen
 {
-    public TMP_Dropdown saveType_DD;
-    public TMP_InputField saveKey_if;
-    public TMP_InputField saveData_if;
+    public TMP_Dropdown loadType_DD;
+    public TMP_InputField loadKey_if;
     public TextMeshProUGUI resultArea_txt;
 
-    public Button saveSubmit_btn;
+    public Button loadData_btn;
     public Button back_btn;
 
     string key = "";
     string content = "";
 
-    IService selectedSaveService;
+    IService selectedService;
 
     public void Awake()
     {
-        saveSubmit_btn.onClick.AddListener(OnSaveClicked);
+        loadData_btn.onClick.AddListener(OnLoadClicked);
 
         back_btn.onClick.AddListener(() => UIManager.activateScreen?.Invoke(ScreenTitle.MainMenu, true));
-
     }
     void OnDestroy()
     {
-        saveSubmit_btn.onClick.RemoveAllListeners();
+        loadData_btn.onClick.RemoveAllListeners();
         back_btn.onClick.RemoveAllListeners();
     }
+
     public override void Start()
     {
         base.Start();
     }
-
-    async void OnSaveClicked()
+    async void OnLoadClicked()
     {
-        LogResult("Saved Called!");
-        key = saveKey_if.text;
-        content = saveData_if.text;
-        string selectedOption = saveType_DD.options[saveType_DD.value].text;
+        LogResult("Load Called!");
+        key = loadKey_if.text;
+        string selectedOption = loadType_DD.options[loadType_DD.value].text;
         if (SetSaveType(selectedOption))
         {
-            SystemResult result = await selectedSaveService.SaveDataAsync(key, content);
+            SystemResult result = await selectedService.LoadDataAsync(key);
             LogResult(result);
         }
     }
@@ -53,7 +48,7 @@ public class SaveSystemScreen : Screen
     {
         if (Enum.TryParse(selectedOption, ignoreCase: true, out ServiceType correctType))
         {
-            selectedSaveService = UIManager.serviceInitializer.GetService(correctType);
+            selectedService = UIManager.serviceInitializer.GetService(correctType);
             return true;
         }
         else
