@@ -66,13 +66,6 @@ public class UIManager : MonoBehaviour
 
 }
 
-public enum ServiceType
-{
-    Immediate,
-    Deffered,
-    Flaky
-}
-
 public enum ScreenTitle
 {
     SaveScreen,

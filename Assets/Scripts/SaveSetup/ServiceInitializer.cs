@@ -22,3 +22,9 @@ public class ServiceInitializer
         _ => instant
     };
 }
+public enum ServiceType
+{
+    Immediate,
+    Deffered,
+    Flaky
+}
